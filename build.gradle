@@ -65,3 +65,6 @@ jar {
 		rename { "README_${project.base.archivesName.get()}.md" }
 	}
 }
+
+// Smoke and full gametests, configured once for the whole suite in Pandorical.
+apply from: file("../pandorical/gametest.gradle")

@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"id": "server-issues-gametest",
+	"version": "1.0.0",
+	"name": "Server Issues smoke test",
+	"description": "Loads the mod, joins a world, and fails if anything on the way threw.",
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"justfatlard.server_issues.gametest.SmokeTest"
+		]
+	},
+	"depends": {
+		"server-issues": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}

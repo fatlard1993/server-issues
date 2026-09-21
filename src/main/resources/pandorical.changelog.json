@@ -1,0 +1,13 @@
+{
+  "overview": [
+    "Players tell the admins what went wrong, or what could be better, without leaving the game."
+  ],
+  "versions": {
+    "1.0.1": [
+      "No change to play: a fresh number so the build had a file of its own to go up."
+    ],
+    "1.0.0": [
+      "/bug and /idea take a line from any player, /issues reads the latest back to an op. Each report keeps the time, who sent it, where they stood and the block they were looking at, one line at a time to a file any editor can read. Stock clients can report."
+    ]
+  }
+}

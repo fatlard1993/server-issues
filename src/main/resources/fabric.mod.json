@@ -1,24 +1,29 @@
 {
-  "schemaVersion": 1,
-  "id": "server-issues",
-  "version": "${version}",
-  "name": "Server Issues",
-  "description": "Players report bugs with /bug and ask for changes with /idea; each one is saved with the time, who sent it, where they stood and what they were looking at, to a file on the server for the admins to read later. Works with vanilla clients.",
-  "authors": [
-    "justfatlard"
-  ],
-  "license": "MIT",
-  "icon": "assets/server-issues/icon.png",
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "justfatlard.server_issues.Main"
-    ]
-  },
-  "depends": {
-    "fabricloader": ">=${loaderVersion}",
-    "fabric-api": "${fabricApiVersion}",
-    "minecraft": "${minecraftDependency}",
-    "java": ">=25"
-  }
+	"schemaVersion": 1,
+	"id": "server-issues",
+	"version": "${version}",
+	"name": "Server Issues",
+	"description": "Players report bugs with /bug and ask for changes with /idea; each one is saved with the time, who sent it, where they stood and what they were looking at, to a file on the server for the admins to read later. Works with vanilla clients.",
+	"authors": [
+		"justfatlard"
+	],
+	"license": "MIT",
+	"icon": "assets/server-issues/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"justfatlard.server_issues.Main"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=${loaderVersion}",
+		"fabric-api": "${fabricApiVersion}",
+		"minecraft": "${minecraftDependency}",
+		"java": ">=25"
+	},
+	"contact": {
+		"homepage": "https://github.com/fatlard1993/server-issues",
+		"sources": "https://github.com/fatlard1993/server-issues",
+		"issues": "https://github.com/fatlard1993/server-issues/issues"
+	}
 }

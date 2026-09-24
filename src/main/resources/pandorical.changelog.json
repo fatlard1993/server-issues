@@ -7,7 +7,9 @@
       "No change to play: a fresh number so the build had a file of its own to go up."
     ],
     "1.0.0": [
-      "/bug and /idea take a line from any player, /issues reads the latest back to an op. Each report keeps the time, who sent it, where they stood and the block they were looking at, one line at a time to a file any editor can read. Stock clients can report."
+      "/bug and /idea take a line from any player; /issues reads the latest back to an op.",
+      "Each report keeps the time, who sent it, where they stood and the block they looked at.",
+      "One line at a time to a file any editor can read. Stock clients can report."
     ]
   }
 }

@@ -9,6 +9,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import justfatlard.server_issues.maintain.Maintain;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
@@ -44,6 +45,7 @@ public class Main implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> register(dispatcher));
+		Maintain.init();
 		LOGGER.info("[{}] Reports go to {}", MOD_ID, IssueLog.FILE.toAbsolutePath());
 	}
 

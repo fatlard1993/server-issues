@@ -3,6 +3,9 @@
     "Players tell the admins what went wrong, or what could be better, without leaving the game."
   ],
   "versions": {
+    "1.1.0": [
+      "Maintainers the server names can start a Claude session about a report and talk to it in chat."
+    ],
     "1.0.1": [
       "No change to play: a fresh number so the build had a file of its own to go up."
     ],

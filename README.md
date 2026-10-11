@@ -12,6 +12,41 @@ A player can send one every few seconds at most, and a report is as long as a ch
 
 Server-side only; works with vanilla clients.
 
+## Maintainers
+
+Optional, and off unless the server sets it up: named players can work through reports with Claude from inside the game. Each one starts or joins a Claude Code session in [paude](https://github.com/fatlard1993/paude), on the same machine as the server, that starts out knowing its job: the reports it is about, where the logs are, how the mod suite builds, and how to stage and swap a fix without breaking the running server. Claude reads up, says in chat what it thinks is wrong, and waits to be told to go.
+
+- `/maintain unlock <passphrase>` - once per visit, before anything else.
+- `/maintain start [report numbers]` - a new session about those reports (`/maintain start 12 14`), or about whatever you then say.
+- `/claude <message>` - talk to the session you are at. Its replies come back in chat, with a grey line for each command it runs or file it changes; long replies are cut short.
+- `/maintain sessions`, `/maintain join <id>`, `/maintain leave` - the sessions started from the game, and moving between them. A session keeps running in paude while nobody is at it.
+- `/maintain link` - a link that opens the session in a browser, with everything in it, good for a day.
+- When Claude asks something (a permission, a choice), its options show in chat to click.
+
+A fix goes out when the maintainer says so: the swap restarts the server and disconnects everyone. Coming back and unlocking again puts the maintainer back at their session, with what Claude said while they were gone.
+
+Set up in `config/server-issues.json`:
+
+```json
+{
+	"paude": {
+		"url": "http://127.0.0.1:8044",
+		"tokenFile": "~/.paude/local-token",
+		"project": "minecraft",
+		"browserUrl": "https://203.0.113.7"
+	},
+	"maintainers": {
+		"fatlard1993": "a passphrase of twelve characters or more"
+	}
+}
+```
+
+Everything under `paude` is optional and shown with its default, except `browserUrl`, which `/maintain link` needs: the address paude is reached at from outside. `token` in place of `tokenFile` gives the token itself. `project` is the paude project sessions start in. Paude needs its session feed (`/api/sessions/:id/feed`), which is what carries Claude's side into chat. The file is read again when it changes; a new maintainer rejoins to see the commands.
+
+A maintainer can do anything this machine's user can: Claude runs commands as that user. Give it to someone you would give that shell. The server accepts any name (it is offline-mode), so the name proves nothing and the passphrase is what lets a player in; five wrong ones in ten minutes and that name waits. Reports are written by any player, and the briefing tells Claude to read them as descriptions of a problem, not instructions.
+
+The briefing Claude starts with is bundled. To change it, put your own in `config/server-issues-briefing.md`; `{maintainer}`, `{server}` (the server's folder) and `{reports}` are filled in. Sessions started from the game are listed in `server-issues-sessions.json` in the server's folder, with where each maintainer sits.
+
 ## Development
 
 Installing is in [DEVELOPMENT.md](DEVELOPMENT.md).

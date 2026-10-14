@@ -135,7 +135,7 @@ public final class Maintain {
 			}
 			Desk.recordStart(new Desk.Started(id, name, about,
 				OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS).toString()));
-			Desk.sit(player.getUUID(), id, "0", false);
+			Desk.sit(player, id, "0", false);
 			Paude.name(settings, id, "In game: " + about + " (" + name + ")");
 			Main.LOGGER.info("[{}] {} started maintainer session {} about {}", Main.MOD_ID, name, id, about);
 			MutableComponent started = Component.literal("Session " + shortId(id)
@@ -186,7 +186,7 @@ public final class Maintain {
 			return 0;
 		}
 		String id = found.get().id();
-		Desk.sit(player.getUUID(), id, null, false);
+		Desk.sit(player, id, null, false);
 		context.getSource().sendSuccess(() -> Component.literal("At session " + shortId(id) + " (" + found.get().about()
 			+ "). New replies land here; /maintain link for what came before.").withStyle(ChatFormatting.GREEN), false);
 		return 1;

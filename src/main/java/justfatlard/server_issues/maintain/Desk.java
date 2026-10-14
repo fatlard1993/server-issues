@@ -61,6 +61,8 @@ final class Desk {
 
 	private static final class Watch {
 		final String sessionId;
+		/** Who paude shows as here, reading from the game. */
+		final String playerName;
 		volatile String cursor;
 		/** Coming back: what was missed piles up here until the feed is read to its end, then only its tail is shown. */
 		List<Component> backlog;
@@ -69,8 +71,9 @@ final class Desk {
 		volatile Paude.Asking asking;
 		final AtomicBoolean polling = new AtomicBoolean();
 
-		Watch(String sessionId, String cursor, boolean catchingUp) {
+		Watch(String sessionId, String playerName, String cursor, boolean catchingUp) {
 			this.sessionId = sessionId;
+			this.playerName = playerName;
 			this.cursor = cursor;
 			this.backlog = catchingUp ? new ArrayList<>() : null;
 		}
@@ -123,7 +126,7 @@ final class Desk {
 		unlocked.add(player.getUUID());
 		Main.LOGGER.info("[{}] {} unlocked maintaining", Main.MOD_ID, name);
 		Seat seat = seatOf(player.getUUID());
-		if (seat != null) sit(player.getUUID(), seat.id(), seat.cursor(), true);
+		if (seat != null) sit(player, seat.id(), seat.cursor(), true);
 		return Unlock.OPENED;
 	}
 
@@ -154,10 +157,10 @@ final class Desk {
 	}
 
 	/** Relay this session to the player from {@code cursor}: "0" for a new one, null to start from now. */
-	static void sit(UUID player, String sessionId, String cursor, boolean catchingUp) {
-		watches.put(player, new Watch(sessionId, cursor, catchingUp));
+	static void sit(ServerPlayer player, String sessionId, String cursor, boolean catchingUp) {
+		watches.put(player.getUUID(), new Watch(sessionId, player.getGameProfile().name(), cursor, catchingUp));
 		synchronized (Desk.class) {
-			saved.seats.put(player.toString(), new Seat(sessionId, cursor));
+			saved.seats.put(player.getUUID().toString(), new Seat(sessionId, cursor));
 			save();
 		}
 	}
@@ -215,7 +218,7 @@ final class Desk {
 			UUID player = entry.getKey();
 			Watch watch = entry.getValue();
 			if (!watch.polling.compareAndSet(false, true)) continue;
-			Paude.feed(settings, watch.sessionId, watch.cursor)
+			Paude.feed(settings, watch.sessionId, watch.playerName, watch.cursor)
 				.thenAccept(page -> relay(player, watch, page))
 				.thenCompose(relayed -> Paude.status(settings, watch.sessionId))
 				.thenCompose(status -> "waiting".equals(status)

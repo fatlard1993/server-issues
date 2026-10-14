@@ -55,9 +55,12 @@ final class Paude {
 		return call(settings, "POST", "/api/sessions/" + sessionId + "/prompt", body).thenApply(ignored -> null);
 	}
 
-	/** What the session said and did since {@code cursor}; null for none, which reads from now on. */
-	static CompletableFuture<Feed.Page> feed(Settings settings, String sessionId, String cursor) {
-		String query = cursor == null ? "" : "?after=" + encode(cursor);
+	/**
+	 * What the session said and did since {@code cursor}; null for none, which reads from now on. Read as {@code player}
+	 * in Minecraft, so paude shows them as here for as long as they keep reading.
+	 */
+	static CompletableFuture<Feed.Page> feed(Settings settings, String sessionId, String player, String cursor) {
+		String query = "?label=Minecraft&name=" + encode(player) + (cursor == null ? "" : "&after=" + encode(cursor));
 		return call(settings, "GET", "/api/sessions/" + sessionId + "/feed" + query, null)
 			.thenApply(json -> Feed.of(json.getAsJsonObject()));
 	}

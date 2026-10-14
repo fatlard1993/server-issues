@@ -3,6 +3,9 @@
     "Players tell the admins what went wrong, or what could be better, without leaving the game."
   ],
   "versions": {
+    "1.1.1": [
+      "While a maintainer reads a Claude session in chat, paude shows them as there, by their player name."
+    ],
     "1.1.0": [
       "Maintainers the server names can start a Claude session about a report and talk to it in chat."
     ],

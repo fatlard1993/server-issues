@@ -32,6 +32,14 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 	private static Settings current;
 	private static long readModified = Long.MIN_VALUE;
 
+	/**
+	 * What a crash leads to: a bug report, and with paude set up a session that looks into it, or one
+	 * that may also fix it and restart the server with nobody there to ask.
+	 */
+	public enum OnCrash { OFF, REPORT, INVESTIGATE, FIX }
+
+	private static OnCrash onCrash = OnCrash.REPORT;
+
 	/** @return the settings, or null when the maintainer side is off */
 	public static synchronized Settings get() {
 		long modified;
@@ -42,9 +50,16 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 		}
 		if (modified != readModified) {
 			readModified = modified;
+			onCrash = OnCrash.REPORT;
 			current = modified < 0 ? null : read();
 		}
 		return current;
+	}
+
+	/** Read with the rest, but on without paude or a file at all: then a crash is a bug report and nothing more. */
+	public static synchronized OnCrash onCrash() {
+		get();
+		return onCrash;
 	}
 
 	public boolean maintains(String player) {
@@ -70,6 +85,7 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 			Main.LOGGER.error("[{}] {} does not read, so maintainers are off: {}", Main.MOD_ID, FILE, e.getMessage());
 			return null;
 		}
+		onCrash = onCrashOf(string(root, "onCrash", "report"));
 		if (!(root.get("paude") instanceof JsonObject paude)) return null;
 
 		String project = string(paude, "project", "minecraft");
@@ -98,6 +114,19 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 		Main.LOGGER.info("[{}] Maintainers reach paude at {} in project {}: {}", Main.MOD_ID, settings.url,
 			project, passphrases.isEmpty() ? "nobody yet" : String.join(", ", passphrases.keySet()));
 		return settings;
+	}
+
+	private static OnCrash onCrashOf(String value) {
+		return switch (value.toLowerCase(Locale.ROOT)) {
+			case "off" -> OnCrash.OFF;
+			case "report" -> OnCrash.REPORT;
+			case "investigate" -> OnCrash.INVESTIGATE;
+			case "fix" -> OnCrash.FIX;
+			default -> {
+				Main.LOGGER.warn("[{}] onCrash is off, report, investigate or fix, not \"{}\", so it is report", Main.MOD_ID, value);
+				yield OnCrash.REPORT;
+			}
+		};
 	}
 
 	private static String string(JsonObject object, String key, String fallback) {

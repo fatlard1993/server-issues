@@ -47,6 +47,25 @@ A maintainer can do anything this machine's user can: Claude runs commands as th
 
 The briefing Claude starts with is bundled. To change it, put your own in `config/server-issues-briefing.md`; `{maintainer}`, `{server}` (the server's folder) and `{reports}` are filled in. Sessions started from the game are listed in `server-issues-sessions.json` in the server's folder, with where each maintainer sits.
 
+## Crashes
+
+When the server comes back from a crash, the crash is saved as a bug report from "the server", with the cause and the crash report's name, and shows up in `/issues` like any other. It also counts a run that stopped without shutting down at all, which is what the out-of-memory killer or a `kill -9` leaves behind.
+
+That much is on unless the server turns it off. With paude set up as well, the crash can go to a Claude session of its own, which shows up in `/maintain sessions` as "a crash by the server" for a maintainer to join. A crash within the hour of the last one goes to that same session, so a crash loop is one investigation. Set in `config/server-issues.json`, beside `paude`:
+
+```json
+{
+	"onCrash": "fix"
+}
+```
+
+- `report`, or left out - only the bug report. Without paude, `investigate` and `fix` do this too.
+- `investigate` - Claude reads the crash report, the logs and what changed, says what it found, and changes nothing until a maintainer joins and says go.
+- `fix` - when the cause is plain, lies in one mod of the suite and the fix is small, Claude makes it, stages it, warns any players and restarts the server with it, without waiting for anyone. It restarts for a fix once; anything less sure, it only says what it found.
+- `off` - nothing.
+
+The mod looks when it loads, before the world does, since a dying server cannot be trusted to say so and systemd starts it again moments later. So a server that crashes while loading the world is still caught, and one that fails before the mod loads at all is not. If Claude stops to ask a permission with nobody there, it waits until a maintainer answers. The crash session's briefing can be replaced like the other, in `config/server-issues-crash-briefing.md`; `{server}`, `{crash}` (what happened, with the report numbers) and `{leeway}` (how far it may go) are filled in. How the last run ended is kept in `server-issues-run.json` in the server's folder.
+
 ## Development
 
 Installing is in [DEVELOPMENT.md](DEVELOPMENT.md).

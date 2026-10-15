@@ -46,6 +46,7 @@ public class Main implements ModInitializer {
 	public void onInitialize() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> register(dispatcher));
 		Maintain.init();
+		Crashes.init();
 		LOGGER.info("[{}] Reports go to {}", MOD_ID, IssueLog.FILE.toAbsolutePath());
 	}
 

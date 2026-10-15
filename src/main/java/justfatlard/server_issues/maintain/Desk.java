@@ -84,11 +84,11 @@ final class Desk {
 	private static final Set<UUID> unlocked = ConcurrentHashMap.newKeySet();
 	private static final Map<String, Deque<Long>> misses = new ConcurrentHashMap<>();
 	private static final Map<UUID, Watch> watches = new ConcurrentHashMap<>();
-	private static Saved saved;
+	/** Read as the mod loads, before the server starts: a crash is answered that early. */
+	private static Saved saved = load();
 
 	static synchronized void open(MinecraftServer running) {
 		server = running;
-		saved = load();
 		poller = Executors.newSingleThreadScheduledExecutor(task -> {
 			Thread thread = new Thread(task, "server-issues relay");
 			thread.setDaemon(true);

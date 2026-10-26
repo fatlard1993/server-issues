@@ -25,5 +25,12 @@
 		"homepage": "https://github.com/fatlard1993/server-issues",
 		"sources": "https://github.com/fatlard1993/server-issues",
 		"issues": "https://github.com/fatlard1993/server-issues/issues"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.donate": "https://github.com/sponsors/fatlard1993"
+			}
+		}
 	}
 }

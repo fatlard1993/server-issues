@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * {@code /bug} and {@code /idea}: something went wrong, or something could be better, said where
- * it happened and kept for the admins. {@code /issues} reads the latest back, for ops.
+ * it happened and kept for the admins. {@code /issues} reads the latest open ones back, and
+ * closes or reopens one, for ops.
  */
 public class Main implements ModInitializer {
 	public static final String MOD_ID = "server-issues";
@@ -61,7 +62,15 @@ public class Main implements ModInitializer {
 			.requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
 			.executes(context -> list(context.getSource(), SHOWN_BY_DEFAULT))
 			.then(Commands.argument("count", IntegerArgumentType.integer(1, 50))
-				.executes(context -> list(context.getSource(), IntegerArgumentType.getInteger(context, "count")))));
+				.executes(context -> list(context.getSource(), IntegerArgumentType.getInteger(context, "count"))))
+			.then(Commands.literal("close")
+				.then(Commands.argument("number", IntegerArgumentType.integer(1))
+					.executes(context -> close(context, ""))
+					.then(Commands.argument("why", StringArgumentType.greedyString())
+						.executes(context -> close(context, StringArgumentType.getString(context, "why").trim())))))
+			.then(Commands.literal("reopen")
+				.then(Commands.argument("number", IntegerArgumentType.integer(1))
+					.executes(Main::reopen))));
 	}
 
 	private static int submit(CommandContext<CommandSourceStack> context, String kind) {
@@ -107,17 +116,55 @@ public class Main implements ModInitializer {
 	}
 
 	private static int list(CommandSourceStack source, int count) {
-		List<IssueLog.Report> reports = IssueLog.all();
-		if (reports.isEmpty()) {
+		IssueLog.Snapshot snapshot = IssueLog.read();
+		List<IssueLog.Report> open = snapshot.open();
+		if (snapshot.reports().isEmpty()) {
 			source.sendSuccess(() -> Component.literal("No reports yet."), false);
 			return 0;
 		}
-		List<IssueLog.Report> latest = reports.subList(Math.max(0, reports.size() - count), reports.size());
-		source.sendSuccess(() -> Component.literal(reports.size() + " reports, latest " + latest.size() + ":"), false);
+		if (open.isEmpty()) {
+			source.sendSuccess(() -> Component.literal("Nothing open; all " + snapshot.reports().size() + " reports are closed."), false);
+			return 0;
+		}
+		List<IssueLog.Report> latest = open.subList(Math.max(0, open.size() - count), open.size());
+		source.sendSuccess(() -> Component.literal(open.size() + " open of " + snapshot.reports().size()
+			+ " reports, latest " + latest.size() + ":"), false);
 		for (IssueLog.Report report : latest) {
 			source.sendSuccess(() -> Component.literal("#" + report.number() + " " + report.time().replace('T', ' ')
 				+ " " + report.kind() + " from " + report.player() + ": " + report.message()), false);
 		}
 		return latest.size();
+	}
+
+	private static int close(CommandContext<CommandSourceStack> context, String why) {
+		CommandSourceStack source = context.getSource();
+		int number = IntegerArgumentType.getInteger(context, "number");
+		if (why.length() > LONGEST) why = why.substring(0, LONGEST);
+		IssueLog.Change change = IssueLog.close(number, source.getTextName(), why);
+		if (change == IssueLog.Change.DONE) {
+			LOGGER.info("[{}] #{} closed by {}{}", MOD_ID, number, source.getTextName(), why.isEmpty() ? "" : ": " + why);
+		}
+		return answer(source, number, change, "closed", "is already closed");
+	}
+
+	private static int reopen(CommandContext<CommandSourceStack> context) {
+		CommandSourceStack source = context.getSource();
+		int number = IntegerArgumentType.getInteger(context, "number");
+		IssueLog.Change change = IssueLog.reopen(number, source.getTextName());
+		if (change == IssueLog.Change.DONE) LOGGER.info("[{}] #{} reopened by {}", MOD_ID, number, source.getTextName());
+		return answer(source, number, change, "reopened", "is not closed");
+	}
+
+	private static int answer(CommandSourceStack source, int number, IssueLog.Change change, String done, String already) {
+		switch (change) {
+			case DONE -> {
+				source.sendSuccess(() -> Component.literal("#" + number + " " + done + ".").withStyle(ChatFormatting.GREEN), true);
+				return 1;
+			}
+			case NO_SUCH_REPORT -> source.sendFailure(Component.literal("There is no report #" + number + "."));
+			case ALREADY -> source.sendFailure(Component.literal("#" + number + " " + already + "."));
+			case NOT_SAVED -> source.sendFailure(Component.literal("That did not save; #" + number + " is unchanged."));
+		}
+		return 0;
 	}
 }

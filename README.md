@@ -4,9 +4,10 @@ Players tell the admins what went wrong, or what could be better, from inside th
 
 - `/bug <what happened>` - something is broken.
 - `/idea <what you would like>` - a change or a new thing.
-- `/issues [count]` - ops read back the latest reports (five unless told, up to 50).
+- `/issues [count]` - ops read back the latest open reports (five unless told, up to 50).
+- `/issues close <number> [why]`, `/issues reopen <number>` - ops mark a report dealt with, or not after all.
 
-Each report is saved with the time it was sent, who sent it, where they were standing and the block they were looking at, one line of JSON per report in `server-issues.jsonl` in the server's folder. It is appended and never rewritten, so a crash costs at most the report being written, and it reads in any editor or script. Each report also gets a line in the server log.
+Each report is saved with the time it was sent, who sent it, where they were standing and the block they were looking at, one line of JSON per report in `server-issues.jsonl` in the server's folder. Closing or reopening one adds a line too (`{"closes": 6, "time": ..., "by": ..., "why": ...}`, `{"reopens": 6, ...}`), so the file is appended and never rewritten, so a crash costs at most the report being written, and it reads in any editor or script. Each report also gets a line in the server log.
 
 A player can send one every few seconds at most, and a report is as long as a chat message can be.
 

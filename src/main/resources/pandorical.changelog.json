@@ -3,6 +3,9 @@
     "Players tell the admins what went wrong, or what could be better, without leaving the game."
   ],
   "versions": {
+    "1.2.3": [
+      "Drop changelog notes for changes nothing in the game shows."
+    ],
     "1.2.2": [
       "Ops close a report, or reopen it, and /issues lists only the open ones."
     ],

@@ -40,6 +40,14 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 
 	private static OnCrash onCrash = OnCrash.REPORT;
 
+	/**
+	 * What a mess report leads to: written down only, cleaned where the mod can tell on its own, and with
+	 * paude set up, the rest handed to a session that looks, or that may clean it too.
+	 */
+	public enum OnMess { OFF, REPORT, CLEAN, INVESTIGATE, FIX }
+
+	private static OnMess onMess = OnMess.CLEAN;
+
 	/** @return the settings, or null when the maintainer side is off */
 	public static synchronized Settings get() {
 		long modified;
@@ -51,6 +59,7 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 		if (modified != readModified) {
 			readModified = modified;
 			onCrash = OnCrash.REPORT;
+			onMess = OnMess.CLEAN;
 			current = modified < 0 ? null : read();
 		}
 		return current;
@@ -60,6 +69,12 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 	public static synchronized OnCrash onCrash() {
 		get();
 		return onCrash;
+	}
+
+	/** Read with the rest, and like onCrash on without paude: then nothing is handed to Claude. */
+	public static synchronized OnMess onMess() {
+		get();
+		return onMess;
 	}
 
 	public boolean maintains(String player) {
@@ -86,6 +101,7 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 			return null;
 		}
 		onCrash = onCrashOf(string(root, "onCrash", "report"));
+		onMess = onMessOf(string(root, "onMess", "clean"));
 		if (!(root.get("paude") instanceof JsonObject paude)) return null;
 
 		String project = string(paude, "project", "minecraft");
@@ -125,6 +141,20 @@ public record Settings(URI url, String token, Path tokenFile, String project, St
 			default -> {
 				Main.LOGGER.warn("[{}] onCrash is off, report, investigate or fix, not \"{}\", so it is report", Main.MOD_ID, value);
 				yield OnCrash.REPORT;
+			}
+		};
+	}
+
+	private static OnMess onMessOf(String value) {
+		return switch (value.toLowerCase(Locale.ROOT)) {
+			case "off" -> OnMess.OFF;
+			case "report" -> OnMess.REPORT;
+			case "clean" -> OnMess.CLEAN;
+			case "investigate" -> OnMess.INVESTIGATE;
+			case "fix" -> OnMess.FIX;
+			default -> {
+				Main.LOGGER.warn("[{}] onMess is off, report, clean, investigate or fix, not \"{}\", so it is clean", Main.MOD_ID, value);
+				yield OnMess.CLEAN;
 			}
 		};
 	}

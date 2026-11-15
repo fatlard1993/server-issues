@@ -3,7 +3,7 @@
 	"id": "server-issues",
 	"version": "${version}",
 	"name": "Server Issues",
-	"description": "Players report bugs with /bug and ask for changes with /idea; each one is saved with the time, who sent it, where they stood and what they were looking at, to a file on the server for the admins to read later. Works with vanilla clients.",
+	"description": "Players report bugs with /bug, ask for changes with /idea and report grief with /mess, which cleans what it can on its own; each one is saved with the time, who sent it, where they stood and what they were looking at, to a file on the server for the admins to read later. Works with vanilla clients.",
 	"authors": [
 		"justfatlard"
 	],

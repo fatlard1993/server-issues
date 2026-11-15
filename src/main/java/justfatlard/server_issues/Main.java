@@ -10,9 +10,11 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import justfatlard.server_issues.maintain.Maintain;
+import justfatlard.server_issues.mess.Messes;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -25,8 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@code /bug} and {@code /idea}: something went wrong, or something could be better, said where
- * it happened and kept for the admins. {@code /issues} reads the latest open ones back, and
+ * {@code /bug}, {@code /idea} and {@code /mess}: something went wrong, could be better, or was left a
+ * mess, said where it happened and kept for the admins. {@code /issues} reads the latest open ones back, and
  * closes or reopens one, for ops.
  */
 public class Main implements ModInitializer {
@@ -45,19 +47,23 @@ public class Main implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> register(dispatcher));
+		CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> register(dispatcher, registry));
 		Maintain.init();
 		Crashes.init();
 		LOGGER.info("[{}] Reports go to {}", MOD_ID, IssueLog.FILE.toAbsolutePath());
 	}
 
-	private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+	private static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registry) {
 		dispatcher.register(Commands.literal("bug")
 			.then(Commands.argument("what happened", StringArgumentType.greedyString())
 				.executes(context -> submit(context, "bug"))));
 		dispatcher.register(Commands.literal("idea")
 			.then(Commands.argument("what you would like", StringArgumentType.greedyString())
 				.executes(context -> submit(context, "idea"))));
+		dispatcher.register(Commands.literal("mess")
+			.then(Commands.argument("what is wrong here", StringArgumentType.greedyString())
+				.executes(context -> Messes.submit(context.getSource(), message(context, "what is wrong here"),
+					lookingAt(context.getSource().getPlayer())))));
 		dispatcher.register(Commands.literal("issues")
 			.requires(source -> Commands.LEVEL_GAMEMASTERS.check(source.permissions()))
 			.executes(context -> list(context.getSource(), SHOWN_BY_DEFAULT))
@@ -70,13 +76,14 @@ public class Main implements ModInitializer {
 						.executes(context -> close(context, StringArgumentType.getString(context, "why").trim())))))
 			.then(Commands.literal("reopen")
 				.then(Commands.argument("number", IntegerArgumentType.integer(1))
-					.executes(Main::reopen))));
+					.executes(Main::reopen)))
+			.then(Messes.clean(registry))
+			.then(Messes.undo()));
 	}
 
 	private static int submit(CommandContext<CommandSourceStack> context, String kind) {
 		CommandSourceStack source = context.getSource();
-		String message = context.getArgument(kind.equals("bug") ? "what happened" : "what you would like", String.class).trim();
-		if (message.length() > LONGEST) message = message.substring(0, LONGEST);
+		String message = message(context, kind.equals("bug") ? "what happened" : "what you would like");
 
 		ServerPlayer player = source.getPlayer();
 		long now = System.currentTimeMillis();
@@ -105,6 +112,11 @@ public class Main implements ModInitializer {
 		source.sendSuccess(() -> Component.literal("Thanks! " + what + " #" + number + " saved for the admins.")
 			.withStyle(ChatFormatting.GREEN), false);
 		return number;
+	}
+
+	private static String message(CommandContext<CommandSourceStack> context, String argument) {
+		String message = StringArgumentType.getString(context, argument).trim();
+		return message.length() > LONGEST ? message.substring(0, LONGEST) : message;
 	}
 
 	/** The block in front of the player, for a bug that is about one; empty when there is none. */

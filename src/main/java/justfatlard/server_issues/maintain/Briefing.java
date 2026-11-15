@@ -22,12 +22,19 @@ final class Briefing {
 
 	static final Path OWN = FabricLoader.getInstance().getConfigDir().resolve("server-issues-briefing.md");
 	static final Path OWN_CRASH = FabricLoader.getInstance().getConfigDir().resolve("server-issues-crash-briefing.md");
+	static final Path OWN_MESS = FabricLoader.getInstance().getConfigDir().resolve("server-issues-mess-briefing.md");
 
 	private static final String MAY_FIX = "You may fix it and restart the server with the fix without waiting for anyone,"
 		+ " when the cause is plain, it lies in one mod of the suite, and the fix is small. When any of that is less than sure,"
 		+ " stop at saying what you found and what you would do.";
 	private static final String ONLY_LOOK = "Find out what happened and stop there: change nothing, stage nothing and restart"
 		+ " nothing until a maintainer joins this session and says go.";
+
+	private static final String MAY_CLEAN = "You may clean what is plainly mess or grief with /issues clean, without"
+		+ " waiting for anyone. Anything that might be someone's build, or that you are less than sure of, you only describe,"
+		+ " with what you would clean.";
+	private static final String ONLY_DESCRIBE = "Find out what the mess is and stop there: say what you would clean, as the"
+		+ " /issues clean commands you would run, and clean nothing until a maintainer joins this session and says go.";
 
 	private static final Gson GSON = new Gson();
 
@@ -47,6 +54,13 @@ final class Briefing {
 			.replace("{server}", server())
 			.replace("{crash}", crash)
 			.replace("{leeway}", leeway == Settings.OnCrash.FIX ? MAY_FIX : ONLY_LOOK);
+	}
+
+	static String forMess(Settings.OnMess leeway, String mess) {
+		return template(OWN_MESS, "/maintain-mess-briefing.md")
+			.replace("{server}", server())
+			.replace("{mess}", mess)
+			.replace("{leeway}", leeway == Settings.OnMess.FIX ? MAY_CLEAN : ONLY_DESCRIBE);
 	}
 
 	private static String server() {

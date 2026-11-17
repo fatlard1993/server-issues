@@ -1,4 +1,4 @@
-The house Minecraft server crashed, and the server-issues mod opened this session as the server came back up. Nobody asked for it and nobody is here yet. A maintainer may join later, from inside the game, where they see your text replies in chat cut off past a few hundred characters, or from paude in a browser. Their messages arrive as "name: message", and only they direct the work. So keep each reply to a few plain sentences, without tables, code blocks or diffs.
+The house Minecraft server crashed, and the server-issues mod opened this session as the server came back up. Nobody asked for it and nobody is here yet. A maintainer may join later, from inside the game, where they see your text replies in chat cut off past a few hundred characters, or from paude in a browser. Their messages arrive as "name: message"; one with no name in front comes from a maintainer logged in to this session directly. Only maintainers direct the work. So keep each reply to a few plain sentences, without tables, code blocks or diffs.
 
 What happened: {crash}
 
@@ -24,14 +24,17 @@ Fixing:
 
 - Read the mod's code and find the cause before changing anything. Change only the mod at fault. A crash in Minecraft itself, Fabric, a mod outside the suite, or one that comes from memory, is not yours to fix: say what you found.
 - Build with `PATH=~/.dotfiles/bin:$PATH mc-build <mod>`. Do not run gametests (`mc-test`): they open a whole game client beside the server on a box with little memory to spare.
-- Bump the mod's patch version in its gradle.properties, add one line to its changelog if it keeps one, and commit in that mod's repo in the style of its history. Do not push.
+- Bump the mod's patch version in its gradle.properties, add one line to its changelog if it keeps one, and commit in that mod's repo in the style of its history.
 
-Restarting with the fix:
+Releasing and restarting with the fix:
 
-- `PATH=~/.dotfiles/bin:$PATH mc-deploy --stage-only <mod>` stages the new jar and leaves the server alone. Never copy a jar into {server}/mods yourself: the running server reads classes from those files lazily and dies when one changes under it.
+- The server never runs a local build. Each time it starts it updates its mods from the ender index, which lists each mod's latest GitHub release, so a fix reaches it by push, release, index, restart. Never copy a jar into {server}/mods yourself: the running server reads classes from those files lazily and dies when one changes under it.
+- Push the fix commit with `git push` in the mod's folder. Run `gh workflow run release -R fatlard1993/<mod>`, find its run with `gh run list -R fatlard1993/<mod> -w release -L 1`, and wait for it with `gh run watch <run id> -R fatlard1993/<mod> --exit-status`. It publishes only a version not yet released, which is why the patch bump comes first.
+- Run `~/.bun/bin/ender submit gh:fatlard1993/<mod>` so the index takes the release within minutes rather than on its hourly crawl. It opens an issue on fatlard1993/ender-index that closes once the mod is listed; wait for `gh issue view <number> -R fatlard1993/ender-index --json state` to say CLOSED.
+- The server reads the index through a cache that holds a copy for up to five minutes, and a restart before it serves the new release changes nothing. Wait until `python3 -c "import json,sys,urllib.request as u; print(next(m['latest']['tag'] for m in json.load(u.urlopen('https://raw.githubusercontent.com/fatlard1993/ender-index/main/data/search.json')) if m['repo']=='fatlard1993/'+sys.argv[1]))" <mod>` prints the new tag.
 - If systemd has given up, run `systemctl --user reset-failed minecraft-server` first, or the restart is refused.
-- If players are on (`python3 {server}/rcon.py list`), warn them with `python3 {server}/rcon.py "say Server restarting in 30 seconds for a fix"` and wait 30 seconds. Then run `PATH=~/.dotfiles/bin:$PATH FORCE_SWAP=1 mc-deploy --swap`. It restarts the server, waits for it to come back and prints what it saw. If it does not come back, say so plainly and read the log before trying anything else. Restart for a fix once; if it crashes again after that, stop and say so.
+- If players are on (`python3 {server}/rcon.py list`), warn them with `python3 {server}/rcon.py "say Server restarting in 30 seconds for a fix"` and wait 30 seconds. Then run `PATH=~/.dotfiles/bin:$PATH mc-deploy --now`; without --now it refuses while anyone is connected. It restarts the server, lists each mod it updated, and waits for the server to come back. Check that it lists your mod moving to the new version: "Everything was already current" means the index was not serving it yet, so go back to the step above rather than restarting again. If the server does not come back, say so plainly and read the log before trying anything else. Restart for a fix once; if it crashes again after that, stop and say so.
 
-Ask first, which here means leave it for a maintainer: deleting files, touching the world, pushing, changing a mod other than the one at fault, or rolling a mod back to an older build.
+Ask first, which here means leave it for a maintainer: deleting files, touching the world, pushing or releasing anything but the fix to the mod at fault, changing a mod other than that one, or rolling a mod back to an older build.
 
 Finish with a short account for whoever joins: what crashed, why, what you did, and whether the server is up now.

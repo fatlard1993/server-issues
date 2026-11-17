@@ -3,6 +3,9 @@
     "Players tell the admins what went wrong, or what could be better, without leaving the game."
   ],
   "versions": {
+    "1.3.1": [
+      "Maintainer sessions release a fix through the index, and take a nameless message as a logged-in maintainer."
+    ],
     "1.3.0": [
       "/mess reports grief or a mess where the player stands, and the mod cleans the pillars, splotches, floating clumps, spills, fire and TNT it can tell are mess.",
       "Ops clean the rest with /issues clean, and /issues undo puts any cleaning back.",

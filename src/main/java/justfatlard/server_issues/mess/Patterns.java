@@ -184,12 +184,15 @@ public final class Patterns {
 		}
 	}
 
-	/** A small clump touching nothing: left hanging after towering down, or after what held it was cleaned. */
+	/**
+	 * A small clump touching nothing, not even at a corner: left hanging after towering down, or after what
+	 * held it was cleaned. Builds meet at corners along diagonal edges and stairs, so corners hold too.
+	 */
 	private void floating() {
 		boolean[] seen = new boolean[grid.size()];
 		for (int start = 0; start < grid.size(); start++) {
 			if (seen[start] || empty(start) || grid.at(start) == null) continue;
-			Body body = flood(start, seen, LARGEST_FLOATING, i -> grid.at(i) != null && !empty(i), FACES);
+			Body body = flood(start, seen, LARGEST_FLOATING, i -> grid.at(i) != null && !empty(i), AROUND);
 			if (body.edge || body.overflowed || pointedAt[start]) continue;
 			boolean natural = false, marker = false, suspect = true;
 			for (int i : body.cells) {

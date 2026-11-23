@@ -3,6 +3,9 @@
     "Players tell the admins what went wrong, or what could be better, without leaving the game."
   ],
   "versions": {
+    "1.3.3": [
+      "Describes itself in one short line of what it adds."
+    ],
     "1.3.2": [
       "Blocks touching only at a corner hold each other up, so the edges of diagonal builds are no longer flagged as floating."
     ],

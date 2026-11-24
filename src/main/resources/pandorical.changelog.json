@@ -3,6 +3,9 @@
     "Players tell the admins what went wrong, or what could be better, without leaving the game."
   ],
   "versions": {
+    "1.3.4": [
+      "A maintainer session waits for a fix to reach the index where the server actually reads it, instead of a stale listing that never showed the new release."
+    ],
     "1.3.3": [
       "Describes itself in one short line of what it adds."
     ],
